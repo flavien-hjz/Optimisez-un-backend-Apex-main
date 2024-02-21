@@ -59,4 +59,29 @@ public with sharing class TestMyTeamOrdersController {
         System.assertEquals(expectedResult, actualResult, 'Turnover displayed is : ' + actualResult + ' Expected was : ' + expectedResult);
 
     }
+
+    @isTest
+    static void displayAggregatesTest() {
+
+        List<Order> activatedOrders = new List<Order>();
+        List<Order> orders = [SELECT Id, Status FROM Order WHERE Status = 'Draft'];
+        for (Order order : orders) {
+            order.Status = 'Activated';
+            order.OwnerId = UserInfo.getUserId();
+            activatedOrders.add(order);
+        }
+        
+        Test.startTest();
+        update activatedOrders;
+        Test.stopTest();
+
+        MyTeamOrdersController myTeamsOrdersController = new MyTeamOrdersController();
+
+        // We created orders with the same user, the displayAggregates size must be 1
+
+        List<MyTeamOrdersController.AggregateResultWrapper> displayAggregates = myTeamsOrdersController.displayAggregates;
+        System.assertEquals(1, displayAggregates.size(), 'There should be one aggregate result for the test user');
+     
+    }
+
 }
